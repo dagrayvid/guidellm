@@ -4,9 +4,14 @@ from typing import Any, Literal, Optional, TypeVar, Union
 
 from pydantic import Field, computed_field
 
+from guidellm.benchmark.metrics import (
+    BenchmarkMetrics,
+    GenerativeMetrics
+)
 from guidellm.benchmark.profile import (
     AsyncProfile,
     ConcurrentProfile,
+    GoodputProfile,
     Profile,
     SweepProfile,
     SynchronousProfile,
@@ -36,11 +41,9 @@ from guidellm.scheduler import (
 __all__ = [
     "Benchmark",
     "BenchmarkArgs",
-    "BenchmarkMetrics",
     "BenchmarkRunStats",
     "BenchmarkT",
     "GenerativeBenchmark",
-    "GenerativeMetrics",
     "GenerativeTextErrorStats",
     "GenerativeTextResponseStats",
     "StatusBreakdown",
@@ -57,6 +60,7 @@ class BenchmarkArgs(StandardBaseModel):
         AsyncProfile,
         SweepProfile,
         ConcurrentProfile,
+        GoodputProfile,
         ThroughputProfile,
         SynchronousProfile,
         Profile,
@@ -212,19 +216,6 @@ class BenchmarkRunStats(StandardBaseModel):
             "This is the time from when the actual request was started to when "
             "it was completed."
         )
-    )
-
-
-class BenchmarkMetrics(StandardBaseModel):
-    """
-    A serializable model representing the metrics for a benchmark run.
-    """
-
-    requests_per_second: StatusDistributionSummary = Field(
-        description="The distribution of requests per second for the benchmark.",
-    )
-    request_concurrency: StatusDistributionSummary = Field(
-        description="The distribution of requests concurrency for the benchmark.",
     )
 
 
@@ -496,59 +487,6 @@ class GenerativeTextErrorStats(GenerativeTextResponseStats):
             return None
 
         return super().output_tokens_per_second
-
-
-class GenerativeMetrics(BenchmarkMetrics):
-    """
-    A serializable model representing the metrics for a generative benchmark run.
-    """
-
-    request_latency: StatusDistributionSummary = Field(
-        description="The distribution of latencies for the completed requests.",
-    )
-    prompt_token_count: StatusDistributionSummary = Field(
-        description=(
-            "The distribution of token counts in the prompts for completed, "
-            "errored, and all requests."
-        )
-    )
-    output_token_count: StatusDistributionSummary = Field(
-        description=(
-            "The distribution of token counts in the outputs for completed, "
-            "errored, and all requests."
-        )
-    )
-    time_to_first_token_ms: StatusDistributionSummary = Field(
-        description=(
-            "The distribution of latencies to receiving the first token in "
-            "milliseconds for completed, errored, and all requests."
-        ),
-    )
-    time_per_output_token_ms: StatusDistributionSummary = Field(
-        description=(
-            "The distribution of latencies per output token in milliseconds for "
-            "completed, errored, and all requests. "
-            "This includes the time to generate the first token and all other tokens."
-        ),
-    )
-    inter_token_latency_ms: StatusDistributionSummary = Field(
-        description=(
-            "The distribution of latencies between tokens in milliseconds for "
-            "completed, errored, and all requests."
-        ),
-    )
-    output_tokens_per_second: StatusDistributionSummary = Field(
-        description=(
-            "The distribution of output tokens per second for completed, "
-            "errored, and all requests."
-        ),
-    )
-    tokens_per_second: StatusDistributionSummary = Field(
-        description=(
-            "The distribution of tokens per second, including prompt and output tokens "
-            "for completed, errored, and all requests."
-        ),
-    )
 
 
 class GenerativeBenchmark(Benchmark):

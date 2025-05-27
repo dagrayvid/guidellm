@@ -240,8 +240,7 @@ class Benchmarker(Generic[AggregatorT, BenchmarkT, RequestT, ResponseT], ABC):
 
             benchmark: BenchmarkT = aggregator.compile()
             profile.completed_strategy(
-                average_rate=benchmark.metrics.requests_per_second.successful.mean,
-                average_concurrency=benchmark.metrics.request_concurrency.successful.mean,
+                metrics=benchmark.metrics
             )
 
             yield BenchmarkerResult(
